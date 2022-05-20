@@ -15,4 +15,4 @@ Note: You need the `BepInEx_64` version for use with Potion Craft
 
 ### Example
 
-![Gives you back your ingredients](https://github.com/MattDeDuck/ShopName/blob/master/dgbexample.gif)
+![Gives you back your ingredients](https://github.com/MattDeDuck/DeathGivesBack/blob/master/dgbexample.gif)
