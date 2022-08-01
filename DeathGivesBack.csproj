@@ -28,12 +28,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>libs\Assembly-CSharp-nstrip.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <HintPath>libs\Unity.TextMeshPro.dll</HintPath>
+    <Reference Include="PotionCraft.Scripts">
+      <HintPath>libs\stripped.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
