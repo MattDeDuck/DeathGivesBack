@@ -1,16 +1,24 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using System.Collections.Generic;
-using System.Reflection;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
+using PotionCraft.ObjectBased.RecipeMap.RecipeMapObject;
+using PotionCraft.ObjectBased.UIElements.FloatingText;
+using PotionCraft.ObjectBased.UIElements.PotionCraftPanel;
+using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
+using PotionCraft.ManagersSystem.RecipeMap;
+using PotionCraft.Settings;
 using PotionCraft.ScriptableObjects.Ingredient;
 using PotionCraft.ScriptableObjects;
+using System.Collections.Generic;
+using System.Reflection;
+using UnityEngine;
+
 
 namespace DeathGivesBack
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, "1.1.0.0")]
+    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, "1.1.1.0")]
     public class Plugin : BaseUnityPlugin
     {
         public static ManualLogSource Log { get; set; }
@@ -29,17 +37,26 @@ namespace DeathGivesBack
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(IndicatorMapItem), "PotionFailed")]
-        public static void OnIndicatorRuined_Prefix()
+        public static void PotionFailed_Prefix()
+        {
+            GiveBackIngredients();
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(PotionResetButton), "OnButtonReleasedPointerInside")]
+        public static void OnButtonReleasedPointerInside_Postfix()
+        {
+            GiveBackIngredients();
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(RecipeMapObject), "Awake")]
+        public static void Awake_Postfix()
+        {
+            LocalizationManager.textData[LocalizationManager.Locale.en].AddText("DGB_text", "Ingredients retrieved!");
+        }
+
+        public static void GiveBackIngredients()
         {
             List<Potion.UsedComponent> usedComponents = Managers.Potion.usedComponents;
-            for (int i = 0; i < usedComponents.Count; i++)
-            {
-                if (usedComponents[i].componentType == Potion.UsedComponent.ComponentType.InventoryItem)
-                {
-                    //used.Add((Ingredient)derp.usedComponents[i].componentObject, derp.usedComponents[i].amount);
-                    Log.LogInfo(usedComponents[i].componentObject.name);
-                }
-            }
 
             Log.LogInfo("# Ingredients retrieved:");
 
@@ -62,6 +79,11 @@ namespace DeathGivesBack
                 // Wipe the dictionary for next use
                 used.Clear();
             }
+
+            RecipeMapObject recipeMapObject = Managers.RecipeMap.recipeMapObject;
+            RecipeMapManagerPotionBasesSettings asset = Settings<RecipeMapManagerPotionBasesSettings>.Asset;
+            Vector2 v = recipeMapObject.transmitterWindow.ViewRect.center + asset.potionFailTextPos;
+            CollectedFloatingText.SpawnNewText(asset.floatingTextSelectBase, v + new Vector2(0f, -1f), new CollectedFloatingText.FloatingTextContent(new Key("DGB_text", null, false).GetText(), CollectedFloatingText.FloatingTextContent.Type.Text, 0f), Managers.Game.Cam.transform, false, false);
         }
     }
 }

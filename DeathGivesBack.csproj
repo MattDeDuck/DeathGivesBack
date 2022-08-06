@@ -32,5 +32,9 @@
       <HintPath>libs\stripped.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="PotionCraft.Settings">
+      <HintPath>libs\PotionCraft.Settings.dll</HintPath>
+      <EmbedInteropTypes>false</EmbedInteropTypes>
+    </Reference>
   </ItemGroup>
 </Project>

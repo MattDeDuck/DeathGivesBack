@@ -14,3 +14,7 @@ Note: You need the `BepInEx_64` version for use with Potion Craft
 - Unzip the folder
 - Copy the folder into `Potion Craft/BepInEx/plugins/`
 - Run the game
+
+### Example
+
+![Ingredients retrieved!](https://github.com/MattDeDuck/DeathGivesBack/blob/master/example.png)
