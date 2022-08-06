@@ -42,12 +42,6 @@ namespace DeathGivesBack
             GiveBackIngredients();
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(PotionResetButton), "OnButtonReleasedPointerInside")]
-        public static void OnButtonReleasedPointerInside_Postfix()
-        {
-            GiveBackIngredients();
-        }
-
         [HarmonyPostfix, HarmonyPatch(typeof(RecipeMapObject), "Awake")]
         public static void Awake_Postfix()
         {
