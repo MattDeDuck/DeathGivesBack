@@ -7,7 +7,9 @@ using PotionCraft.ObjectBased.UIElements.FloatingText;
 using PotionCraft.ObjectBased.UIElements.PotionCraftPanel;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
+using PotionCraft.ManagersSystem.Potion;
 using PotionCraft.ManagersSystem.RecipeMap;
+using PotionCraft.ManagersSystem.SaveLoad;
 using PotionCraft.Settings;
 using PotionCraft.ScriptableObjects.Ingredient;
 using PotionCraft.ScriptableObjects;
@@ -18,7 +20,7 @@ using UnityEngine;
 
 namespace DeathGivesBack
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, "1.1.1.0")]
+    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, "1.1.2.0")]
     public class Plugin : BaseUnityPlugin
     {
         public static ManualLogSource Log { get; set; }
@@ -26,6 +28,8 @@ namespace DeathGivesBack
 
         // Create dictionary to add the used ingredients to, as well as amounts used
         public static Dictionary<Ingredient, int> used = new Dictionary<Ingredient, int>();
+
+        public static bool giveback = true;
 
         private void Awake()
         {
@@ -36,16 +40,16 @@ namespace DeathGivesBack
             Harmony.CreateAndPatchAll(typeof(Plugin));
         }
 
-        [HarmonyPrefix, HarmonyPatch(typeof(IndicatorMapItem), "PotionFailed")]
-        public static void PotionFailed_Prefix()
-        {
-            GiveBackIngredients();
-        }
-
         [HarmonyPostfix, HarmonyPatch(typeof(RecipeMapObject), "Awake")]
         public static void Awake_Postfix()
         {
             LocalizationManager.textData[LocalizationManager.Locale.en].AddText("DGB_text", "Ingredients retrieved!");
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(IndicatorMapItem), "PotionFailed")]
+        public static void PotionFailed_Prefix()
+        {
+            GiveBackIngredients();
         }
 
         public static void GiveBackIngredients()
@@ -78,6 +82,36 @@ namespace DeathGivesBack
             RecipeMapManagerPotionBasesSettings asset = Settings<RecipeMapManagerPotionBasesSettings>.Asset;
             Vector2 v = recipeMapObject.transmitterWindow.ViewRect.center + asset.potionFailTextPos;
             CollectedFloatingText.SpawnNewText(asset.floatingTextSelectBase, v + new Vector2(0f, -1f), new CollectedFloatingText.FloatingTextContent(new Key("DGB_text", null, false).GetText(), CollectedFloatingText.FloatingTextContent.Type.Text, 0f), Managers.Game.Cam.transform, false, false);
+        }
+
+        // Thanks to rswallen#6112 for this
+        [HarmonyPrefix, HarmonyPatch(typeof(PotionManager), "ResetPotion")]
+        public static void ResetPotion_Prefix(bool resetEffectMapItems = true)
+        {
+            if (Managers.SaveLoad.SystemState == SaveLoadManager.SystemStateEnum.Loading)
+            {
+                Log.LogInfo("Nope. Not gonna try while the save is loading");
+            }
+            else if (giveback)
+            {
+                GiveBackIngredients();
+            }
+        }
+
+        // Thanks to rswallen#6112 for this
+        [HarmonyPrefix, HarmonyPatch(typeof(PotionCraftPanel), "MakePotion")]
+        public static void MakePotion_Prefix(bool addToInventory)
+        {
+            Log.LogInfo("Giveback disabled for potion creation");
+            giveback = false;
+        }
+
+        // Thanks to rswallen#6112 for this
+        [HarmonyPostfix, HarmonyPatch(typeof(PotionCraftPanel), "MakePotion")]
+        public static void MakePotion_Postfix(bool addToInventory)
+        {
+            Log.LogInfo("Giveback re-enabled after potion creation");
+            giveback = true;
         }
     }
 }
