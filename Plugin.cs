@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapObject;
 using PotionCraft.ObjectBased.UIElements.FloatingText;
 using PotionCraft.ObjectBased.UIElements.PotionCraftPanel;
@@ -20,11 +19,10 @@ using UnityEngine;
 
 namespace DeathGivesBack
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, "1.1.2.0")]
+    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, "1.1.3.0")]
     public class Plugin : BaseUnityPlugin
     {
         public static ManualLogSource Log { get; set; }
-        public static string pluginLoc = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
         // Create dictionary to add the used ingredients to, as well as amounts used
         public static Dictionary<Ingredient, int> used = new Dictionary<Ingredient, int>();
@@ -44,12 +42,6 @@ namespace DeathGivesBack
         public static void Awake_Postfix()
         {
             LocalizationManager.textData[LocalizationManager.Locale.en].AddText("DGB_text", "Ingredients retrieved!");
-        }
-
-        [HarmonyPrefix, HarmonyPatch(typeof(IndicatorMapItem), "PotionFailed")]
-        public static void PotionFailed_Prefix()
-        {
-            GiveBackIngredients();
         }
 
         public static void GiveBackIngredients()
