@@ -10,22 +10,20 @@ using PotionCraft.ManagersSystem.Potion;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ManagersSystem.SaveLoad;
 using PotionCraft.Settings;
-using PotionCraft.ScriptableObjects.Ingredient;
 using PotionCraft.ScriptableObjects;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 
 namespace DeathGivesBack
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, "1.1.3.0")]
+    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, "1.1.4.0")]
     public class Plugin : BaseUnityPlugin
     {
         public static ManualLogSource Log { get; set; }
 
         // Create dictionary to add the used ingredients to, as well as amounts used
-        public static Dictionary<Ingredient, int> used = new Dictionary<Ingredient, int>();
+        public static Dictionary<InventoryItem, int> used = new();
 
         public static bool giveback = true;
 
@@ -56,11 +54,11 @@ namespace DeathGivesBack
                 // Ignore potion base component
                 if (usedComponents[i].componentType == Potion.UsedComponent.ComponentType.InventoryItem)
                 {
-                    used.Add((Ingredient)usedComponents[i].componentObject, usedComponents[i].amount);
+                    used.Add((InventoryItem)usedComponents[i].componentObject, usedComponents[i].amount);
                 }
 
                 // Add the ingredients back to the player inventory
-                foreach (KeyValuePair<Ingredient, int> usedIng in used)
+                foreach (KeyValuePair<InventoryItem, int> usedIng in used)
                 {
                     Managers.Player.inventory.AddItem(usedIng.Key, usedIng.Value, true, true);
                     Log.LogInfo($"  > {usedIng.Key.name} ({usedIng.Value})");
