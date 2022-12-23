@@ -3,7 +3,7 @@ Death Gives Back is a mod made with BepInEx for use with the Potion Craft game. 
 
 Huge thanks to rswallen#6112 on the discord for helping me make it so it works through potion cancellation as well!
 
-Now updated to work with 0.5.0 beta version of Potion Craft
+This is only compatible with v1.0.3.0 of the Potion Craft Game
 
 ### BepInEx
 - Download the latest BepInEx 5 release from [here](https://github.com/BepInEx/BepInEx/releases)

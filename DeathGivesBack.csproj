@@ -28,13 +28,21 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Reference Include="PotionCraft.Scripts">
-      <HintPath>libs\stripped.dll</HintPath>
+    <Reference Include="PotionCraft.SceneLoader">
+      <HintPath>libs\PotionCraft.SceneLoader.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="PotionCraft.Settings">
       <HintPath>libs\PotionCraft.Settings.dll</HintPath>
-      <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PotionCraft.Scripts">
+      <HintPath>libs\Scriptsstripped.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PotionCraft.DataBaseSystem">
+      <HintPath>libs\strippedData.dll</HintPath>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
 </Project>

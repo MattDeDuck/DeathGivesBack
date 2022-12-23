@@ -1,31 +1,33 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
+using DarkScreenSystem;
 using HarmonyLib;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapObject;
+using PotionCraft.ObjectBased.UIElements.ConfirmationWindow;
 using PotionCraft.ObjectBased.UIElements.FloatingText;
 using PotionCraft.ObjectBased.UIElements.PotionCraftPanel;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
-using PotionCraft.ManagersSystem.Potion;
+using PotionCraft.ManagersSystem.Game;
 using PotionCraft.ManagersSystem.RecipeMap;
-using PotionCraft.ManagersSystem.SaveLoad;
 using PotionCraft.Settings;
 using PotionCraft.ScriptableObjects;
+using PotionCraft.ScriptableObjects.Potion;
 using System.Collections.Generic;
 using UnityEngine;
 
 
 namespace DeathGivesBack
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, "1.1.4.0")]
+    [BepInPlugin(PluginInfo.PLUGIN_GUID, "PotionCraftDeathGivesBack", "1.0.3.0")]
     public class Plugin : BaseUnityPlugin
     {
         public static ManualLogSource Log { get; set; }
 
+        public const string PLUGIN_GUID = "com.mattdeduck.potioncraftdeathgivesback";
+
         // Create dictionary to add the used ingredients to, as well as amounts used
         public static Dictionary<InventoryItem, int> used = new();
-
-        public static bool giveback = true;
 
         private void Awake()
         {
@@ -33,18 +35,30 @@ namespace DeathGivesBack
 
             Log = this.Logger;
 
+            Log.LogInfo($"Plugin {PLUGIN_GUID} is loaded!");
             Harmony.CreateAndPatchAll(typeof(Plugin));
+            Harmony.CreateAndPatchAll(typeof(GameManagerStartPatch));
+            Harmony.CreateAndPatchAll(typeof(ClassPatches));
+            Log.LogInfo($"Plugin {PLUGIN_GUID}: Patch Succeeded!");
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(RecipeMapObject), "Awake")]
-        public static void Awake_Postfix()
+        public static void AddLocaleText()
         {
-            LocalizationManager.textData[LocalizationManager.Locale.en].AddText("DGB_text", "Ingredients retrieved!");
+            // Adds the localisation for the two key values
+            if (!LocalizationManager.localizationData.Contains("DGB_text", 0, 0))
+            {
+                LocalizationManager.localizationData.Add(0, "DGB_text", "Ingredients retrieved!");
+            }
+
+            if (!LocalizationManager.localizationData.Contains("DGB_resetpotion_text", 0, 0))
+            {
+                LocalizationManager.localizationData.Add(0, "DGB_resetpotion_text", "All the ingredients will be returned to your inventory. Reset potion?");
+            }
         }
 
         public static void GiveBackIngredients()
         {
-            List<Potion.UsedComponent> usedComponents = Managers.Potion.usedComponents;
+            List<PotionUsedComponent> usedComponents = Managers.Potion.usedComponents;
 
             Log.LogInfo("# Ingredients retrieved:");
 
@@ -52,7 +66,7 @@ namespace DeathGivesBack
             for (int i = 0; i < usedComponents.Count; i++)
             {
                 // Ignore potion base component
-                if (usedComponents[i].componentType == Potion.UsedComponent.ComponentType.InventoryItem)
+                if (usedComponents[i].componentType == PotionUsedComponent.ComponentType.InventoryItem)
                 {
                     used.Add((InventoryItem)usedComponents[i].componentObject, usedComponents[i].amount);
                 }
@@ -68,40 +82,30 @@ namespace DeathGivesBack
                 used.Clear();
             }
 
+            // Spawns the text for the player notifying them of ingredient retrieval
             RecipeMapObject recipeMapObject = Managers.RecipeMap.recipeMapObject;
             RecipeMapManagerPotionBasesSettings asset = Settings<RecipeMapManagerPotionBasesSettings>.Asset;
             Vector2 v = recipeMapObject.transmitterWindow.ViewRect.center + asset.potionFailTextPos;
-            CollectedFloatingText.SpawnNewText(asset.floatingTextSelectBase, v + new Vector2(0f, -1f), new CollectedFloatingText.FloatingTextContent(new Key("DGB_text", null, false).GetText(), CollectedFloatingText.FloatingTextContent.Type.Text, 0f), Managers.Game.Cam.transform, false, false);
+            CollectedFloatingText.SpawnNewText(asset.floatingTextSelectBase,
+                                               v + new Vector2(0f, -1f),
+                                               new CollectedFloatingText.FloatingTextContent(new Key("DGB_text", null, false).GetText(), CollectedFloatingText.FloatingTextContent.Type.Text, 0f),
+                                               Managers.Game.Cam.transform,
+                                               false,
+                                               false);
         }
 
-        // Thanks to rswallen#6112 for this
-        [HarmonyPrefix, HarmonyPatch(typeof(PotionManager), "ResetPotion")]
-        public static void ResetPotion_Prefix(bool resetEffectMapItems = true)
+        [HarmonyPostfix, HarmonyPatch(typeof(PotionResetButton), "OnButtonReleasedPointerInside")]
+        public static void OnButtonReleasedPointerInside_Postfix()
         {
-            if (Managers.SaveLoad.SystemState == SaveLoadManager.SystemStateEnum.Loading)
-            {
-                Log.LogInfo("Nope. Not gonna try while the save is loading");
-            }
-            else if (giveback)
-            {
-                GiveBackIngredients();
-            }
-        }
-
-        // Thanks to rswallen#6112 for this
-        [HarmonyPrefix, HarmonyPatch(typeof(PotionCraftPanel), "MakePotion")]
-        public static void MakePotion_Prefix(bool addToInventory)
-        {
-            Log.LogInfo("Giveback disabled for potion creation");
-            giveback = false;
-        }
-
-        // Thanks to rswallen#6112 for this
-        [HarmonyPostfix, HarmonyPatch(typeof(PotionCraftPanel), "MakePotion")]
-        public static void MakePotion_Postfix(bool addToInventory)
-        {
-            Log.LogInfo("Giveback re-enabled after potion creation");
-            giveback = true;
+            // Replaces the standard reset potion localisation text
+            ConfirmationWindow.Show(DarkScreenLayer.Lower,
+                                    new Key("#reset_potion_warning_title", null, false),
+                                    new Key("DGB_resetpotion_text", null, false),
+                                    Settings<GameManagerSettings>.Asset.confirmationWindowPosition,
+                                    delegate ()
+                                    {
+                                        Managers.Potion.ResetPotion(true);
+                                    }, null, DarkScreenType.Scene, 0f, false);
         }
     }
 }
