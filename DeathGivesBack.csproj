@@ -28,9 +28,15 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Reference Include="PotionCraft.Core">
+      <HintPath>libs\PotionCraft.Core.dll</HintPath>
+    </Reference>
     <Reference Include="PotionCraft.SceneLoader">
       <HintPath>libs\PotionCraft.SceneLoader.dll</HintPath>
       <Private>false</Private>
+    </Reference>
+    <Reference Include="PotionCraft.Scripts">
+      <HintPath>libs\PotionCraft.Scripts-publicized.dll</HintPath>
     </Reference>
     <Reference Include="PotionCraft.Settings">
       <HintPath>libs\PotionCraft.Settings.dll</HintPath>
@@ -44,5 +50,15 @@
       <HintPath>libs\strippedData.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="PotionCraft.Scripts">
+      <HintPath>libs\Scriptsstripped.dll</HintPath>
+    </Reference>
+    <Reference Include="PotionCraft.Scripts">
+      <HintPath>libs\PotionCraft.Scripts-publicized.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="libs\" />
   </ItemGroup>
 </Project>

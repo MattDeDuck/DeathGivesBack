@@ -1,9 +1,14 @@
 ﻿using BepInEx.Logging;
+using DarkScreenSystem;
 using HarmonyLib;
-using PotionCraft.ObjectBased.UIElements.PotionCraftPanel;
+using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.Potion;
 using PotionCraft.ManagersSystem.SaveLoad;
+using PotionCraft.ObjectBased.UIElements.ConfirmationWindow;
+using PotionCraft.ObjectBased.UIElements.PotionCraftPanel;
+using PotionCraft.ManagersSystem.Game;
+using PotionCraft.Settings;
 
 namespace DeathGivesBack
 {
@@ -12,6 +17,20 @@ namespace DeathGivesBack
         static ManualLogSource Log => Plugin.Log;
 
         public static bool giveback = true;
+
+        [HarmonyPostfix, HarmonyPatch(typeof(PotionResetButton), "OnButtonReleasedPointerInside")]
+        public static void OnButtonReleasedPointerInside_Postfix()
+        {
+            // Replaces the standard reset potion localisation text
+            ConfirmationWindow.Show(DarkScreenLayer.Lower,
+                                    new Key("#reset_potion_warning_title", null, false),
+                                    new Key("DGB_resetpotion_text", null, false),
+                                    Settings<GameManagerSettings>.Asset.confirmationWindowPosition,
+                                    delegate ()
+                                    {
+                                        Managers.Potion.ResetPotion(true);
+                                    }, null, DarkScreenType.Scene, 0f, false);
+        }
 
         // Thanks to rswallen#6112 for this
         [HarmonyPrefix, HarmonyPatch(typeof(PotionManager), "ResetPotion")]
@@ -23,7 +42,7 @@ namespace DeathGivesBack
             }
             else if (giveback)
             {
-                Plugin.GiveBackIngredients();
+                Functions.GiveBackIngredients();
             }
         }
 
