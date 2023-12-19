@@ -5,7 +5,7 @@ using PotionCraft.LocalizationSystem;
 
 namespace DeathGivesBack
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, "PotionCraftDeathGivesBack", "1.1.0.0")]
+    [BepInPlugin(PluginInfo.PLUGIN_GUID, "PotionCraftDeathGivesBack", "1.1.1.0")]
     public class Plugin : BaseUnityPlugin
     {
         public static ManualLogSource Log { get; set; }

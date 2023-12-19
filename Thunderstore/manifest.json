@@ -1,0 +1,9 @@
+{
+  "name": "DeathGivesBack",
+  "version_number": "1.1.1",
+  "website_url": "https://github.com/MattDeDuck/DeathGivesBack",
+  "description": "Death Gives Back is a mod made with BepInEx for use with the Potion Craft game. It gives you back the ingredients you lose when a potion fails.",
+  "dependencies": [
+    "BepInEx-BepInExPack_PotionCraft-5.4.18"
+  ]
+}
